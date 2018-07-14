@@ -11,12 +11,24 @@ import pkgutil
 from pprint import pprint
 
 
+def get_std_paths():
+
+    distro_base_path = sys.executable.split('bin/python')[0]
+
+    py_str = 'python{}.{}'.format(sys.version_info.major, sys.version_info.minor)
+
+    std_paths = (
+        os.path.join(distro_base_path, 'lib', py_str, 'lib-dynload'),
+        os.path.join(distro_base_path, 'lib', py_str)
+    )
+
+    return std_paths
+
+
 def get_set_of_standard_modules():
 
     d = dict()
     all_module_names = []
-
-    faulty = []
 
     for m in pkgutil.iter_modules():
 
@@ -34,17 +46,10 @@ def get_set_of_standard_modules():
         else:
             d[path].append(m.name)
 
-    distro_base_path = sys.executable.split('bin/python')[0]
-
-    std_paths = (
-        os.path.join(distro_base_path, 'lib', 'python3.6', 'lib-dynload'),
-        os.path.join(distro_base_path, 'lib', 'python3.6')
-    )
-
     std_modules = []
     for dir_name, modules_list in d.items():
 
-        if dir_name in std_paths:
+        if dir_name in get_std_paths():
             std_modules += modules_list
 
     std_modules += list(sys.builtin_module_names)
