@@ -17,7 +17,9 @@ IGNORE_DIRS = (r'__pycache__', r'^\..*')
 
 
 def is_python_file(fname):
-    return fname[-3:] == '.py'
+
+    ext = os.path.splitext(fname)[1]
+    return ext in ('.py', '.ipynb')
 
 
 def dir_is_python_package(files_in_dir):
