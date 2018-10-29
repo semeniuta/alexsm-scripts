@@ -1,7 +1,11 @@
-#
-# Piped with output from the following command:
-# egrep -r "(import flexvi|from flexvi)" --include \*.ipynb --include \*.py .
-#
+"""
+Process the output of grepimports.sh and display lists 
+of the importing Python scripts or Jupyter notebooks,
+grouped by each individual imported module.
+
+Example:
+grepimports mypackage /directory/to/search | python libraryuse.py
+"""
 
 import fileinput
 import re
