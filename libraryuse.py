@@ -10,6 +10,7 @@ grepimports mypackage /directory/to/search | python libraryuse.py
 import fileinput
 import re
 import json
+from pprint import pprint
 
 def add_to_res(res_dict, key, value):
 
@@ -20,31 +21,32 @@ def add_to_res(res_dict, key, value):
 regex_import_x = r'^import'
 regex_from_x_import = r'^from.*import'
 
-res = dict()
 
-for line in fileinput.input():
+if __name__ == '__main__':
 
-    user, import_string = line.split(':')
+    res = dict()
 
-    if re.search(regex_import_x, import_string):
-        module = import_string.split(' ')[1]        
-        add_to_res(res, module, user)
+    for line in fileinput.input():
 
-    if re.search(regex_from_x_import, import_string):
+        user, import_string = line.split(':')
 
-        module_base, remainder = import_string.split(' import ')
-        module_base = module_base.split(' ')[1].strip()
-
-        several_rel_modules = re.search(r',', remainder)
-        if several_rel_modules:
-            rel_modules = remainder.split(',')
-            for rm in rel_modules:
-                module = '{}.{}'.format(module_base, rm.strip())
-                add_to_res(res, module, user)
-        else:
-            module = '{}.{}'.format(module_base, remainder.strip())
+        if re.search(regex_import_x, import_string):
+            module = import_string.split(' ')[1]        
             add_to_res(res, module, user)
 
+        if re.search(regex_from_x_import, import_string):
 
-for module, users in res.items():
-    print(module, users)
+            module_base, remainder = import_string.split(' import ')
+            module_base = module_base.split(' ')[1].strip()
+
+            several_rel_modules = re.search(r',', remainder)
+            if several_rel_modules:
+                rel_modules = remainder.split(',')
+                for rm in rel_modules:
+                    module = '{}.{}'.format(module_base, rm.strip())
+                    add_to_res(res, module, user)
+            else:
+                module = '{}.{}'.format(module_base, remainder.strip())
+                add_to_res(res, module, user)
+
+    pprint(res)
