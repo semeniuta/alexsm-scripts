@@ -11,7 +11,7 @@
 #
 # Example:
 # cd figures
-# mkdir ~/Desktop/out_tiff
+# mkdir ~/Desktop/out_images
 # /path/to/pdf2im.sh ~/Desktop/out_images jpg
 #
 
