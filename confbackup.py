@@ -15,6 +15,7 @@ import os
 import argparse
 import time
 import shutil
+from glob import glob
 
 FILE_MAPPING = dict()
 
@@ -39,6 +40,25 @@ FILE_MAPPING['mac'] = {
 def generate_datetime_str():
     return time.strftime("%Y-%m-%d_%H%M%S", time.gmtime())
 
+
+def copy_file(f_src, f_key, save_dir):
+    
+    print(f_src, '->', f_key)
+
+    f_dst = os.path.join(save_dir, f_key)
+    shutil.copyfile(f_src, f_dst)
+
+
+def copy_shell_scripts_in_home(save_dir):
+    """
+    Copy all shell scripts in the home directory
+    """
+
+    for fname in glob(os.path.expanduser('~/*.sh')):
+        f_key = os.path.basename(fname)
+        copy_file(fname, f_key, save_dir)
+
+
 if __name__ == '__main__':
 
     arg_parser = argparse.ArgumentParser(description='Perform backup of config files.')
@@ -62,8 +82,6 @@ if __name__ == '__main__':
         f_src = os.path.expanduser(f_loc_str)
 
         if os.path.exists(f_src):
+            copy_file(f_src, f_key, save_dir)
 
-            print(f_src, '->', f_key)
-
-            f_dst = os.path.join(save_dir, f_key)
-            shutil.copyfile(f_src, f_dst)
+    copy_shell_scripts_in_home(save_dir)
