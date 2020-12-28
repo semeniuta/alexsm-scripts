@@ -117,8 +117,14 @@ if __name__ == '__main__':
         
         for k in sorted(entries.keys(), reverse=True):
             v = entries[k]
+            
             print(k, v['date'])
-            print(v['command'])
+            
+            if 'command' in v:
+            	print(v['command'])	
+            else:
+            	print('Operation by user', v['username'])
+            
             print()
 
     elif args.action == 'describe':
