@@ -100,6 +100,8 @@ def parse(fname):
         else:
             pass
 
+    entries[idx] = current_entry
+
     return entries
 
 
