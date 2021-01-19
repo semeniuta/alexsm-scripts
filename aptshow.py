@@ -15,7 +15,11 @@ def run_apt_show(package_name):
 def get_set(out, prefix):
     
     for line in out:
+        
         if line.startswith(prefix):
+            
+            line = line.split(prefix)[-1].strip()
+            
             packages = [el.strip().decode('utf-8') for el in line.split(b',')]
             return set(packages)
         
@@ -50,7 +54,7 @@ if __name__ == '__main__':
     out_1 = run_apt_show(package_1)
     out_2 = run_apt_show(package_2)
     
-    common, special_1, special_2 = compare(out_1, out_2, b'Depends')
+    common, special_1, special_2 = compare(out_1, out_2, b'Depends:')
     
     print('Common:')
     print_set(common)
