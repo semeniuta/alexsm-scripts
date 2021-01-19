@@ -40,7 +40,7 @@ def compare(out_1, out_2, prefix):
 
 def print_set(s):
     
-    for el in s:
+    for el in sorted(s):
         print(el)
         
     print()
