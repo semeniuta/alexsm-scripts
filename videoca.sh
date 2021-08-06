@@ -1,7 +1,7 @@
 #!/bin/sh
 
-timestamps_file=$1
-video_file=$2
+video_file=$1
+timestamps_file=$2
 tmp_dir="$HOME/Desktop/tmp"
 filelist="$tmp_dir/filelist.txt"
 
