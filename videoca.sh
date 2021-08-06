@@ -40,5 +40,7 @@ do
     eval "$cmd"
 done
 
-# Merge the clips into one file
-ffmpeg -y -f concat -safe 0 -i "$filelist" -c copy "$tmp_dir/merged.mp4"
+# Merge clips into one file if more than one clip is available
+if [ ${#commands[@]} -gt 1 ]; then
+    ffmpeg -y -f concat -safe 0 -i "$filelist" -c copy "$tmp_dir/merged.mp4"
+fi
