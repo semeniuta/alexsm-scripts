@@ -123,9 +123,9 @@ if __name__ == '__main__':
             print(k, v['date'])
             
             if 'command' in v:
-            	print(v['command'])	
+                print(v['command'])	
             else:
-            	print('Operation by user', v['username'])
+                print('Operation by user', v['username'])
             
             print()
 
