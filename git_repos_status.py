@@ -84,6 +84,11 @@ def main():
         print(
             f"  🧩 Unstaged changes: {'Yes' if status['has_unstaged_changes'] else 'No'}"
         )
+
+        ok, branch = repo.run_git_command("rev-parse", "--abbrev-ref", "HEAD")
+        if ok:
+            print(f"  🏷️ Current branch: {branch}")
+
         print(f"  🌐 Has remote: {'Yes' if status['has_remote'] else 'No'}")
         if status["has_remote"]:
             for name, url in status.get("remotes", {}).items():
