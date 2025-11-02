@@ -2,60 +2,68 @@
 import os
 import subprocess
 
-def run_git_command(repo_path, *args):
-    """Run a git command in the given repo and return (success, output)."""
-    try:
-        result = subprocess.run(
-            ["git", *args],
-            cwd=repo_path,
-            capture_output=True,
-            text=True,
-            check=False
-        )
-        return result.returncode == 0, result.stdout.strip()
-    except Exception as e:
-        return False, str(e)
 
-def check_repo_status(repo_path):
-    status = {"path": repo_path}
+class GitRepositoryStatus:
+    def __init__(self, repo_path):
+        self.repo_path = repo_path
+        self.status = {"path": repo_path}
 
-    # 1. Check if this is a Git repository
-    success, output = run_git_command(repo_path, "rev-parse", "--is-inside-work-tree")
-    if not success:
-        status["is_git_repo"] = False
-        return status
-    status["is_git_repo"] = True
+    def run_git_command(self, *args):
+        """Run a git command in the repository and return (success, output)."""
+        try:
+            result = subprocess.run(
+                ["git", *args],
+                cwd=self.repo_path,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            return result.returncode == 0, result.stdout.strip()
+        except Exception as e:
+            return False, str(e)
 
-    # 2. Check for unstaged or uncommitted changes
-    success, output = run_git_command(repo_path, "status", "--porcelain")
-    status["has_unstaged_changes"] = bool(output.strip())
+    def validate_git_repository(self):
+        success, _ = self.run_git_command("rev-parse", "--is-inside-work-tree")
+        self.status["is_git_repo"] = success
+        return success
 
-    # 3. Check if a remote exists and capture remote URLs
-    success, output = run_git_command(repo_path, "remote")
-    remotes = [r for r in output.splitlines() if r.strip()]
-    status["has_remote"] = len(remotes) > 0
-    status["remotes"] = {}
-    if status["has_remote"]:
-        for r in remotes:
-            ok, url = run_git_command(repo_path, "remote", "get-url", r)
-            status["remotes"][r] = url if ok else None
+    def check_for_unstaged_changes(self):
+        success, output = self.run_git_command("status", "--porcelain")
+        self.status["has_unstaged_changes"] = bool(output.strip())
 
-    # 4. Check sync status with remote
-    if status["has_remote"]:
-        run_git_command(repo_path, "fetch", "--quiet")
-        success, output = run_git_command(repo_path, "status", "-sb")
+    def get_remote_information(self):
+        success, output = self.run_git_command("remote")
+        remotes = [r for r in output.splitlines() if r.strip()]
+        self.status["has_remote"] = len(remotes) > 0
+        self.status["remotes"] = {}
+
+        if self.status["has_remote"]:
+            for r in remotes:
+                ok, url = self.run_git_command("remote", "get-url", r)
+                self.status["remotes"][r] = url if ok else None
+
+    def check_remote_sync_status(self):
+        if not self.status["has_remote"]:
+            self.status["is_synced"] = None
+            return
+
+        self.run_git_command("fetch", "--quiet")
+        success, output = self.run_git_command("status", "-sb")
+
         if success:
-            # Example: "## main...origin/main [ahead 1]"
-            if "ahead" in output or "behind" in output:
-                status["is_synced"] = False
-            else:
-                status["is_synced"] = True
+            self.status["is_synced"] = "ahead" not in output and "behind" not in output
         else:
-            status["is_synced"] = None
-    else:
-        status["is_synced"] = None
+            self.status["is_synced"] = None
 
-    return status
+    def check_status(self):
+        if not self.validate_git_repository():
+            return self.status
+
+        self.check_for_unstaged_changes()
+        self.get_remote_information()
+        self.check_remote_sync_status()
+
+        return self.status
 
 
 def main():
@@ -65,27 +73,30 @@ def main():
 
     for d in sorted(dirs):
         repo_path = os.path.join(current_dir, d)
-        status = check_repo_status(repo_path)
+        repo = GitRepositoryStatus(repo_path)
+        status = repo.check_status()
 
         print(f"📁 {d}")
         if not status["is_git_repo"]:
             print("  ❌ Not a Git repository\n")
             continue
 
-        print(f"  🧩 Unstaged changes: {'Yes' if status['has_unstaged_changes'] else 'No'}")
+        print(
+            f"  🧩 Unstaged changes: {'Yes' if status['has_unstaged_changes'] else 'No'}"
+        )
         print(f"  🌐 Has remote: {'Yes' if status['has_remote'] else 'No'}")
         if status["has_remote"]:
             for name, url in status.get("remotes", {}).items():
                 print(f"    🔗 {name}: {url}")
 
             sync_state = (
-                "✅ Synced" if status["is_synced"] else
-                "⚠️ Out of sync" if status["is_synced"] is False else
-                "❓ Unknown"
+                "✅ Synced"
+                if status["is_synced"]
+                else "⚠️ Out of sync" if status["is_synced"] is False else "❓ Unknown"
             )
             print(f"  🔄 Sync status: {sync_state}")
         print()
 
+
 if __name__ == "__main__":
     main()
-
