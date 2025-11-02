@@ -30,10 +30,15 @@ def check_repo_status(repo_path):
     success, output = run_git_command(repo_path, "status", "--porcelain")
     status["has_unstaged_changes"] = bool(output.strip())
 
-    # 3. Check if a remote exists
+    # 3. Check if a remote exists and capture remote URLs
     success, output = run_git_command(repo_path, "remote")
-    remotes = output.splitlines()
+    remotes = [r for r in output.splitlines() if r.strip()]
     status["has_remote"] = len(remotes) > 0
+    status["remotes"] = {}
+    if status["has_remote"]:
+        for r in remotes:
+            ok, url = run_git_command(repo_path, "remote", "get-url", r)
+            status["remotes"][r] = url if ok else None
 
     # 4. Check sync status with remote
     if status["has_remote"]:
@@ -70,6 +75,9 @@ def main():
         print(f"  🧩 Unstaged changes: {'Yes' if status['has_unstaged_changes'] else 'No'}")
         print(f"  🌐 Has remote: {'Yes' if status['has_remote'] else 'No'}")
         if status["has_remote"]:
+            for name, url in status.get("remotes", {}).items():
+                print(f"    🔗 {name}: {url}")
+
             sync_state = (
                 "✅ Synced" if status["is_synced"] else
                 "⚠️ Out of sync" if status["is_synced"] is False else
