@@ -87,7 +87,7 @@ def main():
 
         ok, branch = repo.run_git_command("rev-parse", "--abbrev-ref", "HEAD")
         if ok:
-            print(f"  🏷️ Current branch: {branch}")
+            print(f"  🏷️ Current branch: \033[1m{branch}\033[0m")
 
         print(f"  🌐 Has remote: {'Yes' if status['has_remote'] else 'No'}")
         if status["has_remote"]:
