@@ -82,7 +82,7 @@ def main():
             continue
 
         print(
-            f"  🧩 Unstaged changes: {'Yes' if status['has_unstaged_changes'] else 'No'}"
+            f"  🧩 Unstaged changes: {'Yes ⚠️' if status['has_unstaged_changes'] else 'No'}"
         )
 
         ok, branch = repo.run_git_command("rev-parse", "--abbrev-ref", "HEAD")
@@ -97,7 +97,7 @@ def main():
             sync_state = (
                 "✅ Synced"
                 if status["is_synced"]
-                else "⚠️ Out of sync" if status["is_synced"] is False else "❓ Unknown"
+                else "⚠️⬆️ Out of sync" if status["is_synced"] is False else "❓ Unknown"
             )
             print(f"  🔄 Sync status: {sync_state}")
         print()
